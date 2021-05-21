@@ -1,0 +1,56 @@
+[
+    {
+        "_id": "abcdefghijklmnopqrstuvwxyz",
+        "isActive": true,
+        "enviroment": "prod",
+        "organization": "Applications",
+        "Polset-Name": "SecurityPolicies",
+        "workspace": "TBD",
+        "risk_approval": "http://localhost",
+        "poc_email": "user@localhost",
+        "description": "Exceptions details and other stuff",
+        "created": "2021-03-02",
+        "expires": "2021-06-02",
+        "exception_details": [
+            {
+                "policy": "policy-name",
+                "enforcement_level": "advisory"
+            },
+            {
+                "policy": "policy-name",
+                "enforcement_level": "advisory"
+            },
+            {
+                "policy": "policy-name",
+                "enforcement_level": "advisory"
+            }
+        ]
+    },
+    {
+        "_id": "abcdefghijklmnopqrstuvwxyz",
+        "isActive": true,
+        "enviroment": "prod",
+        "organization": "Applications",
+        "Polset-Name": "SecurityPolicies",
+        "workspace": "TBD",
+        "risk_approval": "http://localhost",
+        "poc_email": "user@localhost",
+        "description": "Exceptions details and other stuff",
+        "created": "2021-03-02",
+        "expires": "2021-06-02",
+        "exception_details": [
+            {
+                "policy": "policy-name",
+                "enforcement_level": "advisory"
+            },
+            {
+                "policy": "policy-name",
+                "enforcement_level": "advisory"
+            },
+            {
+                "policy": "policy-name",
+                "enforcement_level": "advisory"
+            }
+        ]
+    }
+]
