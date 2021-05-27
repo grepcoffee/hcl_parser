@@ -4,31 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
+
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/gohcl"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 )
 
-// type ExceptionDetail struct {
-// 	Policy           string `json:"policy"`
-// 	EnforcementLevel string `json:"enforcement_level"`
-// }
-
-// type Exception struct {
-// 	Id               string `json:"_id"`
-// 	IsActive         bool   `json:"is_Active"`
-// 	Environment      string `json:"enviroment"`
-// 	Organization     string `json:"organization"`
-// 	PolsetName       string `json:"polset_name"`
-// 	Workspace        string `json:"workspace"`
-// 	RiskApproval     string `json:"risk_approval"`
-// 	PocEmail         string `json:"poc_email"`
-// 	Description      string `json:"description"`
-// 	Created          string `json:"created"`
-// 	Expires          string `json:"expires"`
-// 	ExceptionDetails struct {
-// 		Policy           string `json:"policy"`
-// 		EnforcementLevel string `json:"enforcement_level"`
-// 	} `json:"exception_details"`
-// }
-
+// https://mholt.github.io/json-to-go/
 type Exception []struct {
 	ID               string `json:"_id"`
 	Isactive         bool   `json:"isActive"`
@@ -47,6 +30,13 @@ type Exception []struct {
 	} `json:"exception_details"`
 }
 
+type HclPolicy struct {
+	Policy []*struct {
+		Source           string `hcl:"source"`
+		EnforcementLevel string `hcl:"enforcement_level"`
+	} `hcl:"policy,block"`
+}
+
 func LoadExceptionsFile(filename string) (Exception, error) {
 	expFile, _ := ioutil.ReadFile(filename)
 	var exceptions Exception
@@ -54,18 +44,68 @@ func LoadExceptionsFile(filename string) (Exception, error) {
 	return exceptions, err
 }
 
-func main() {
-	fmt.Println("Start of Script")
-	exceptions, _ := LoadExceptionsFile("exceptions.json")
-	for _, x := range exceptions {
-		for _, y := range x.ExceptionDetails {
-			fmt.Println(y.Policy)
-		}
+func readHCLFile(filePath string) {
+	content, err := ioutil.ReadFile(filePath)
+	var policies HclPolicy
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	//fmt.Println(exceptions.)
+	//fmt.Printf("File contents: %s", policies)
+
+	file, diags := hclsyntax.ParseConfig(content, filePath, hcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		fmt.Println("ParseConfig: %w", diags)
+	}
+
+	c := &policies
+	diags = gohcl.DecodeBody(file.Body, nil, c)
+	if diags.HasErrors() {
+		fmt.Println("DecodeBody: %w", diags)
+	}
+
+	fmt.Println(c) // TODO: Remove me
+}
+
+func main() {
+	// fmt.Println("Start of Script")
+	// exceptions, _ := LoadExceptionsFile("exceptions.json")
+	// for _, x := range exceptions {
+	// 	for _, y := range x.ExceptionDetails {
+	// 		fmt.Println(y.Policy)
+	// 		fmt.Println(y)
+	// 	}
+	// }
+	readHCLFile("sentinel.hcl")
 
 }
+
+// mod, diags := tfconfig.LoadModule("sentinel.hcl")
+// 	if diags.HasErrors() {
+// 		log.Fatalf(diags.Error())
+// 	}
+// 	for _, HclPolicy := range mod.Policies {
+// 		fmt.Printf("%#v\n", HclPolicy)
+// 	}
+
+// 	var hclpolicy HclPolicy
+// 	err := hclsimple.DecodeFile("sentinel.hcl", nil, &hclpolicy)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	fmt.Printf("Configuration is %#v", hclpolicy)
+// }
+
+// var hclpolicy HclPolicy
+// 	err := hclsimple.DecodeFile("sentinel.hcl", nil, &hclpolicy)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	fmt.Printf("Configuration is %#v", hclpolicy)
+
+// Add FID to AD Group
+// What is the process to allow github access from jumpboxes
+// Better Dev Process
 
 // file, log_err := os.OpenFile("exceptions.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 // if log_err != nil {
@@ -154,3 +194,32 @@ func main() {
 // err = expParser.Decode(&exceptions)
 // fmt.Println("JsonDecode")
 // return exceptions, err
+
+//func policy_parser(filename string) ([]Policy, error) {
+// 	input, err := os.Open(filename)
+// 	if err != nil {
+// 		return []Policy{}, fmt.Errorf(
+// 			"Error Reading File", err)
+// 	}
+// 	defer input.Close()
+
+// 	src, err := ioutil.ReadAll(input)
+// 	if err != nil {
+// 		return []Policy{}, fmt.Errorf(
+// 			"Error Evalulating File", filename, err)
+// 	}
+// 	parser := hclparse.NewParser()
+// 	srcHCL, diag := parser.ParseHCL(src, filename)
+// 	if diag.HasErrors() {
+// 		return []Policy{}, fmt.Errorf(
+// 			"Error Parsing", diag,
+// 		)
+// 	}
+
+// 	evalContext, err := createContext()
+// 	if err != nil {
+// 		return []Policy{}, fmt.Errorf(
+// 			"Error Creating HCL Eval", err,
+// 		)
+// 	}
+// }
