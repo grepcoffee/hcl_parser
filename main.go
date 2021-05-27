@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-
-	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/gohcl"
-	"github.com/hashicorp/hcl/v2/hclsyntax"
 )
 
 // https://mholt.github.io/json-to-go/
@@ -46,25 +42,24 @@ func LoadExceptionsFile(filename string) (Exception, error) {
 
 func readHCLFile(filePath string) {
 	content, err := ioutil.ReadFile(filePath)
-	var policies HclPolicy
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//fmt.Printf("File contents: %s", policies)
+	fmt.Printf("File contents: %s", content)
 
-	file, diags := hclsyntax.ParseConfig(content, filePath, hcl.Pos{Line: 1, Column: 1})
-	if diags.HasErrors() {
-		fmt.Println("ParseConfig: %w", diags)
-	}
+	// file, diags := hclsyntax.ParseConfig(content, filePath, hcl.Pos{Line: 1, Column: 1})
+	// if diags.HasErrors() {
+	// 	fmt.Println("ParseConfig: %w", diags)
+	// }
 
-	c := &policies
-	diags = gohcl.DecodeBody(file.Body, nil, c)
-	if diags.HasErrors() {
-		fmt.Println("DecodeBody: %w", diags)
-	}
+	// c := &HclPolicy{}
+	// diags = gohcl.DecodeBody(file.Body, nil, c)
+	// if diags.HasErrors() {
+	// 	fmt.Println("DecodeBody: %w", diags)
+	// }
 
-	fmt.Println(c) // TODO: Remove me
+	//fmt.Println(c) // TODO: Remove me
 }
 
 func main() {
