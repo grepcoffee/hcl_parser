@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 )
 
 // https://mholt.github.io/json-to-go/
@@ -41,12 +44,33 @@ func LoadExceptionsFile(filename string) (Exception, error) {
 }
 
 func readHCLFile(filePath string) {
-	content, err := ioutil.ReadFile(filePath)
+	contents, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("File contents: %s", content)
+	f, diags := hclwrite.ParseConfig(contents, "", hcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		fmt.Printf("errors: %s", diags)
+		return
+	}
+
+	//Rename references of variable "a" to "z"
+	for _, block := range f.Body().Blocks() {
+		blockLabels := block.Labels()
+		fmt.Println(blockLabels)
+		blockAttr := block.Body().Attributes()
+		fmt.Println(blockAttr)
+		for _, attr := range f.Body().Attributes() {
+			attr.Expr().RenameVariablePrefix(
+				[]string{"a"},
+				[]string{"z"},
+			)
+	}
+
+	fmt.Printf("%s", f.Bytes())
+
+	//fmt.Printf("File contents: %s", content)
 
 	// file, diags := hclsyntax.ParseConfig(content, filePath, hcl.Pos{Line: 1, Column: 1})
 	// if diags.HasErrors() {
@@ -59,7 +83,7 @@ func readHCLFile(filePath string) {
 	// 	fmt.Println("DecodeBody: %w", diags)
 	// }
 
-	//fmt.Println(c) // TODO: Remove me
+	//fmt.Println(c)
 }
 
 func main() {
