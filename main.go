@@ -88,7 +88,7 @@ func readHCLFile(filePath string) {
 
 func main() {
 	// fmt.Println("Start of Script")
-	// exceptions, _ := LoadExceptionsFile("exceptions.json")
+	// exceptions, _ := LoadExceptionsFile ("exceptions.json")
 	// for _, x := range exceptions {
 	// 	for _, y := range x.ExceptionDetails {
 	// 		fmt.Println(y.Policy)
@@ -99,3 +99,41 @@ func main() {
 
 }
 
+https://pkg.go.dev/github.com/hashicorp/hcl/v2/hclwrite
+
+f := hclwrite.NewEmptyFile()
+rootBody := f.Body()
+rootBody.SetAttributeValue("string", cty.StringVal("bar")) // this is overwritten later
+rootBody.AppendNewline()
+rootBody.SetAttributeValue("object", cty.ObjectVal(map[string]cty.Value{
+	"foo": cty.StringVal("foo"),
+	"bar": cty.NumberIntVal(5),
+	"baz": cty.True,
+}))
+rootBody.SetAttributeValue("string", cty.StringVal("foo"))
+rootBody.SetAttributeValue("bool", cty.False)
+rootBody.SetAttributeTraversal("path", hcl.Traversal{
+	hcl.TraverseRoot{
+		Name: "env",
+	},
+	hcl.TraverseAttr{
+		Name: "PATH",
+	},
+})
+rootBody.AppendNewline()
+fooBlock := rootBody.AppendNewBlock("foo", nil)
+fooBody := fooBlock.Body()
+rootBody.AppendNewBlock("empty", nil)
+rootBody.AppendNewline()
+barBlock := rootBody.AppendNewBlock("bar", []string{"a", "b"})
+barBody := barBlock.Body()
+
+fooBody.SetAttributeValue("hello", cty.StringVal("world"))
+
+bazBlock := barBody.AppendNewBlock("baz", nil)
+bazBody := bazBlock.Body()
+bazBody.SetAttributeValue("foo", cty.NumberIntVal(10))
+bazBody.SetAttributeValue("beep", cty.StringVal("boop"))
+bazBody.SetAttributeValue("baz", cty.ListValEmpty(cty.String))
+
+fmt.Printf("%s", f.Bytes())
