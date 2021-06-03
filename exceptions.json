@@ -13,15 +13,15 @@
         "expires": "2021-06-02",
         "exception_details": [
             {
-                "policy": "policy-name",
+                "policy": "policy1",
                 "enforcement_level": "advisory"
             },
             {
-                "policy": "policy-name",
+                "policy": "policy2",
                 "enforcement_level": "advisory"
             },
             {
-                "policy": "policy-name",
+                "policy": "policy3",
                 "enforcement_level": "advisory"
             }
         ]
@@ -40,15 +40,15 @@
         "expires": "2021-06-02",
         "exception_details": [
             {
-                "policy": "policy-name",
+                "policy": "prevent-something",
                 "enforcement_level": "advisory"
             },
             {
-                "policy": "policy-name",
+                "policy": "policy5",
                 "enforcement_level": "advisory"
             },
             {
-                "policy": "policy-name",
+                "policy": "policy6",
                 "enforcement_level": "advisory"
             }
         ]
