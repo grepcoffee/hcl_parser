@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // https://mholt.github.io/json-to-go/
@@ -43,60 +46,136 @@ func LoadExceptionsFile(filename string) (Exception, error) {
 	return exceptions, err
 }
 
-func readHCLFile(filePath string) {
-	contents, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
+// func readHCLFile(filePath string) {
+// 	contents, err := ioutil.ReadFile(filePath)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	f, diags := hclwrite.ParseConfig(contents, "", hcl.Pos{Line: 1, Column: 1})
-	if diags.HasErrors() {
-		fmt.Printf("errors: %s", diags)
-		return
-	}
+// 	f, diags := hclwrite.ParseConfig(contents, "", hcl.Pos{Line: 1, Column: 1})
+// 	if diags.HasErrors() {
+// 		fmt.Printf("errors: %s", diags)
+// 		return
+// 	}
 
-	//Rename references of variable "a" to "z"
-	for _, block := range f.Body().Blocks() {
-		blockLabels := block.Labels()
-		fmt.Println(blockLabels) // Policy Names
-		// blockAttr := block.Body().Attributes()
-		// fmt.Println(blockAttr)
-		// Rename references of variable "a" to "z"
-	}
-}
+// 	//Rename references of variable "a" to "z"
+// 	for _, block := range f.Body().Blocks() {
+// 		blockLabels := block.Labels()
+// 		fmt.Println(blockLabels) // Policy Names
+// 		// blockAttr := block.Body().Attributes()
+// 		// fmt.Println(blockAttr)
+// 		// Rename references of variable "a" to "z"
+// 	}
+// }
 
-func replaceHCLFile(filePath string) {
-	contents, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
+// func replaceHCLFile(filePath string) {
+// 	contents, err := ioutil.ReadFile(filePath)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	f, diags := hclwrite.ParseConfig(contents, "", hcl.Pos{Line: 1, Column: 1})
-	if diags.HasErrors() {
-		fmt.Printf("errors: %s", diags)
-		return
-	}
+// 	f, diags := hclwrite.ParseConfig(contents, "", hcl.Pos{Line: 1, Column: 1})
+// 	if diags.HasErrors() {
+// 		fmt.Printf("errors: %s", diags)
+// 		return
+// 	}
 
-	for _, attr := range f.Body().Attributes() {
-		attr.Expr().RenameVariablePrefix(
-			[]string{"advisory"},
-			[]string{"12345678"},
-		)
-	}
-	fmt.Printf("%s", f.Bytes())
-}
+// 	for _, attr := range f.Body().Attributes() {
+// 		attr.Expr().RenameVariablePrefix(
+// 			[]string{"advisory"},
+// 			[]string{"12345678"},
+// 		)
+// 	}
+// 	fmt.Printf("%s", f.Bytes())
+// }
 
 func main() {
 	// fmt.Println("Start of Script")
-	// exceptions, _ := LoadExceptionsFile ("exceptions.json")
+	// exceptions, _ := LoadExceptionsFile("exceptions.json")
 	// for _, x := range exceptions {
 	// 	for _, y := range x.ExceptionDetails {
 	// 		fmt.Println(y.Policy)
 	// 		fmt.Println(y)
 	// 	}
 	// }
-	readHCLFile("sentinel.hcl")
-	replaceHCLFile("sentinel.hcl")
+	// readHCLFile("sentinel.hcl")
+	// replaceHCLFile("sentinel.hcl")
+	diagWr := hcl.NewDiagnosticTextWriter(os.Stderr, nil, 78, false)
+
+	inFile := "sentinel.hcl"
+	src, err := ioutil.ReadFile(inFile)
+	if err != nil {
+		log.Fatalf("failed to read %s: %s", inFile, err)
+	}
+	f, diags := hclwrite.ParseConfig(src, inFile, hcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		diagWr.WriteDiagnostics(diags)
+		os.Exit(1)
+	}
+
+	for _, block := range f.Body().Blocks() {
+		if block.Type() != "policy" {
+			continue
+		}
+		labels := block.Labels()
+		if len(labels) != 1 {
+			diags = diags.Append(&hcl.Diagnostic{
+				Severity: hcl.DiagWarning,
+				Summary:  "Invalid policy block",
+				Detail:   "A policy block must have only one label, giving the policy name.",
+			})
+			continue
+		}
+		policyName := labels[0]
+
+		elAttr := block.Body().GetAttribute("enforcement_level")
+		if elAttr == nil {
+			continue
+		}
+
+		toks := elAttr.Expr().BuildTokens(nil)
+		// We're looking for specifically a string literal "advisory",
+		// which will appear as three tokens: OQuote, QuotedLit, CQuote.
+		if len(toks) != 3 || toks[0].Type != hclsyntax.TokenOQuote || toks[1].Type != hclsyntax.TokenQuotedLit || toks[2].Type != hclsyntax.TokenCQuote {
+			diags = diags.Append(&hcl.Diagnostic{
+				Severity: hcl.DiagWarning,
+				Summary:  "Unrecognized enforcement_level expression",
+				Detail:   fmt.Sprintf("Can't process enforcement_level for policy %q: this tool only recognizes expressions that are literal strings.", policyName),
+			})
+			continue
+		}
+
+		el := string(toks[1].Bytes)
+		//fmt.Printf("testing %q", el)
+		// put a list here. for loop and if thing equalls
+
+		//fmt.Println("Start of Script")
+		exceptions, _ := LoadExceptionsFile("exceptions.json")
+		for _, x := range exceptions {
+			for _, y := range x.ExceptionDetails {
+				//fmt.Println(y.Policy)
+				//fmt.Println(y.EnforcementLevel)
+				//log.Printf("policy %q has enforcement level %q", policyName, el)
+				exp_policy_name := y.Policy
+				exp_policy_sev := y.EnforcementLevel
+				if exp_policy_name == policyName {
+					switch el {
+					case exp_policy_sev: //"hard-mandatory":
+						if exp_policy_name == policyName {
+							newEL := "blah" //y.EnforcementLevel //"soft-mandatory"
+							log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
+							block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
+						}
+					}
+				}
+			}
+		}
+		diagWr.WriteDiagnostics(diags)
+		if diags.HasErrors() {
+			os.Exit(1)
+		}
+	}
+	os.Stdout.Write(f.Bytes())
 }
 
 // https://pkg.go.dev/github.com/hashicorp/hcl/v2/hclwrite
