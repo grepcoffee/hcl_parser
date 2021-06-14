@@ -13,15 +13,15 @@
         "expires": "2021-06-02",
         "exception_details": [
             {
-                "policy": "policy1",
+                "policy": "restrict-eks-node-group-size",
                 "enforcement_level": "advisory"
             },
             {
-                "policy": "policy2",
+                "policy": "restrict-iam-policy-actions",
                 "enforcement_level": "advisory"
             },
             {
-                "policy": "policy3",
+                "policy": "restrict-egress-sg-rule-cidr-blocks",
                 "enforcement_level": "advisory"
             }
         ]
@@ -40,16 +40,16 @@
         "expires": "2021-06-02",
         "exception_details": [
             {
-                "policy": "prevent-something",
+                "policy": "restrict-db-instance-engines",
+                "enforcement_level": "blah"
+            },
+            {
+                "policy": "restrict-assumed-roles-by-workspace",
                 "enforcement_level": "advisory"
             },
             {
-                "policy": "policy5",
-                "enforcement_level": "advisory"
-            },
-            {
-                "policy": "policy6",
-                "enforcement_level": "advisory"
+                "policy": "restrict-ami-owners",
+                "enforcement_level": "blah"
             }
         ]
     }

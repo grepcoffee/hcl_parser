@@ -90,16 +90,6 @@ func LoadExceptionsFile(filename string) (Exception, error) {
 // }
 
 func main() {
-	// fmt.Println("Start of Script")
-	// exceptions, _ := LoadExceptionsFile("exceptions.json")
-	// for _, x := range exceptions {
-	// 	for _, y := range x.ExceptionDetails {
-	// 		fmt.Println(y.Policy)
-	// 		fmt.Println(y)
-	// 	}
-	// }
-	// readHCLFile("sentinel.hcl")
-	// replaceHCLFile("sentinel.hcl")
 	diagWr := hcl.NewDiagnosticTextWriter(os.Stderr, nil, 78, false)
 
 	inFile := "sentinel.hcl"
@@ -148,7 +138,7 @@ func main() {
 		el := string(toks[1].Bytes)
 		//fmt.Printf("testing %q", el)
 		// put a list here. for loop and if thing equalls
-
+		fmt.Println(el)
 		//fmt.Println("Start of Script")
 		exceptions, _ := LoadExceptionsFile("exceptions.json")
 		for _, x := range exceptions {
@@ -157,12 +147,17 @@ func main() {
 				//fmt.Println(y.EnforcementLevel)
 				//log.Printf("policy %q has enforcement level %q", policyName, el)
 				exp_policy_name := y.Policy
-				exp_policy_sev := y.EnforcementLevel
+				//fmt.Println(exp_policy_name)
+				//exp_policy_sev := y.EnforcementLevel
+				//fmt.Println(policyName)
 				if exp_policy_name == policyName {
 					switch el {
-					case exp_policy_sev: //"hard-mandatory":
+					//fmt.Println("Printing EL")
+					//fmt.Printf(el)
+					case "hard-mandatory":
+						fmt.Println("Case hard mandatory")
 						if exp_policy_name == policyName {
-							newEL := "blah" //y.EnforcementLevel //"soft-mandatory"
+							newEL := y.EnforcementLevel
 							log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
 							block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
 						}
@@ -175,44 +170,9 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	os.Stdout.Write(f.Bytes())
+	if err := ioutil.WriteFile("sentinel.hcl", f.Bytes(), 0644); err != nil {
+		log.Fatal(err)
+	}
+	//ioutil.WriteFile(filename, "sentinel.hcl")
+	//os.Stdout.Write(f.Bytes())
 }
-
-// https://pkg.go.dev/github.com/hashicorp/hcl/v2/hclwrite
-
-// f := hclwrite.NewEmptyFile()
-// rootBody := f.Body()
-// rootBody.SetAttributeValue("string", cty.StringVal("bar")) // this is overwritten later
-// rootBody.AppendNewline()
-// rootBody.SetAttributeValue("object", cty.ObjectVal(map[string]cty.Value{
-// 	"foo": cty.StringVal("foo"),
-// 	"bar": cty.NumberIntVal(5),
-// 	"baz": cty.True,
-// }))
-// rootBody.SetAttributeValue("string", cty.StringVal("foo"))
-// rootBody.SetAttributeValue("bool", cty.False)
-// rootBody.SetAttributeTraversal("path", hcl.Traversal{
-// 	hcl.TraverseRoot{
-// 		Name: "env",
-// 	},
-// 	hcl.TraverseAttr{
-// 		Name: "PATH",
-// 	},
-// })
-// rootBody.AppendNewline()
-// fooBlock := rootBody.AppendNewBlock("foo", nil)
-// fooBody := fooBlock.Body()
-// rootBody.AppendNewBlock("empty", nil)
-// rootBody.AppendNewline()
-// barBlock := rootBody.AppendNewBlock("bar", []string{"a", "b"})
-// barBody := barBlock.Body()
-
-// fooBody.SetAttributeValue("hello", cty.StringVal("world"))
-
-// bazBlock := barBody.AppendNewBlock("baz", nil)
-// bazBody := bazBlock.Body()
-// bazBody.SetAttributeValue("foo", cty.NumberIntVal(10))
-// bazBody.SetAttributeValue("beep", cty.StringVal("boop"))
-// bazBody.SetAttributeValue("baz", cty.ListValEmpty(cty.String))
-
-// fmt.Printf("%s", f.Bytes())
