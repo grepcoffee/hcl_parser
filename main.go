@@ -112,14 +112,14 @@ func main() {
 									block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
 								}
 							case "soft-mandatory":
-								fmt.Println("Case hard mandatory")
+								fmt.Println("Case soft mandatory")
 								if exp_policy_name == policyName {
 									newEL := y.EnforcementLevel //"soft-mandatory"
 									log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
 									block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
 								}
 							case "advisory":
-								fmt.Println("Case hard mandatory")
+								fmt.Println("Case advisory")
 								if exp_policy_name == policyName {
 									newEL := y.EnforcementLevel //"soft-mandatory"
 									log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
