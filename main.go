@@ -95,26 +95,30 @@ func main() {
 
 			el := string(toks[1].Bytes)
 			//fmt.Printf("testing %q", el)
-			// put a list here. for loop and if thing equalls
 			fmt.Println(el)
-			//fmt.Println("Start of Script")
 			exceptions, _ := LoadExceptionsFile("exceptions.json")
 			for _, x := range exceptions {
 				active := x.Isactive
 				if active == true {
 					for _, y := range x.ExceptionDetails {
-						//fmt.Println(y.Policy)
-						//fmt.Println(y.EnforcementLevel)
-						//log.Printf("policy %q has enforcement level %q", policyName, el)
 						exp_policy_name := y.Policy
-						//fmt.Println(exp_policy_name)
-						//exp_policy_sev := y.EnforcementLevel
-						//fmt.Println(policyName)
 						if exp_policy_name == policyName {
 							switch el {
-							//fmt.Println("Printing EL")
-							//fmt.Printf(el)
 							case "hard-mandatory":
+								fmt.Println("Case hard mandatory")
+								if exp_policy_name == policyName {
+									newEL := y.EnforcementLevel //"soft-mandatory"
+									log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
+									block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
+								}
+							case "soft-mandatory":
+								fmt.Println("Case hard mandatory")
+								if exp_policy_name == policyName {
+									newEL := y.EnforcementLevel //"soft-mandatory"
+									log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
+									block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
+								}
+							case "advisory":
 								fmt.Println("Case hard mandatory")
 								if exp_policy_name == policyName {
 									newEL := y.EnforcementLevel //"soft-mandatory"
