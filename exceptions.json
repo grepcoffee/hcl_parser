@@ -14,7 +14,7 @@
         "exception_details": [
             {
                 "policy": "restrict-eks-node-group-size",
-                "enforcement_level": "advisory"
+                "enforcement_level": "hard man"
             },
             {
                 "policy": "restrict-iam-policy-actions",
@@ -28,7 +28,7 @@
     },
     {
         "_id": "abcdefghijklmnopqrstuvwxyz",
-        "isActive": true,
+        "isActive": false,
         "enviroment": "prod",
         "organization": "Applications",
         "Polset-Name": "SecurityPolicies",
@@ -41,7 +41,7 @@
         "exception_details": [
             {
                 "policy": "restrict-db-instance-engines",
-                "enforcement_level": "blah"
+                "enforcement_level": "hard"
             },
             {
                 "policy": "restrict-assumed-roles-by-workspace",
@@ -49,7 +49,7 @@
             },
             {
                 "policy": "restrict-ami-owners",
-                "enforcement_level": "blah"
+                "enforcement_level": "Changeme123"
             }
         ]
     }
