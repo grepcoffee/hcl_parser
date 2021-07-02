@@ -46,31 +46,28 @@ func LoadExceptionsFile(filename string) (Exception, error) {
 }
 
 func init() {
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
 	log.SetOutput(os.Stdout)
-	// Only log the warning severity or above.
-	log.SetLevel(log.WarnLevel)
 }
 
 func main() {
+	log.Info("Starting Sentinel Exceptions Parser")
+
 	strings := []string{"sentinel.hcl", "sentinel1.hcl"}
 	for _, filePath := range strings {
 		diagWr := hcl.NewDiagnosticTextWriter(os.Stderr, nil, 78, false)
 		src, err := ioutil.ReadFile(filePath)
 		if err != nil {
-			log.Fatalf("failed to read %s: %s", filePath, err)
+			log.Fatal("failed to ", err)
 		}
-
 		f, diags := hclwrite.ParseConfig(src, filePath, hcl.Pos{Line: 1, Column: 1})
 		if diags.HasErrors() {
 			diagWr.WriteDiagnostics(diags)
+			log.Fatal("Error in Hcl Parse Config")
 			os.Exit(1)
 		}
 
 		for _, block := range f.Body().Blocks() {
+			log.Info("Examining Policy Structure")
 			if block.Type() != "policy" {
 				continue
 			}
@@ -104,31 +101,31 @@ func main() {
 
 			el := string(toks[1].Bytes)
 			exceptions, _ := LoadExceptionsFile("exceptions.json")
-			for _, x := range exceptions {
-				if x.IsActive == true {
-					for _, y := range x.ExceptionDetails {
-						exp_policy_name := y.Policy
+			for _, exceptionList := range exceptions {
+				if exceptionList.IsActive == true {
+					for _, exceptionDetailsList := range exceptionList.ExceptionDetails {
+						exp_policy_name := exceptionDetailsList.Policy
 						if exp_policy_name == policyName {
 							switch el {
 							case "hard-mandatory":
 								fmt.Println("Case hard mandatory")
 								if exp_policy_name == policyName {
-									newEL := y.EnforcementLevel
-									log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
+									newEL := exceptionDetailsList.EnforcementLevel
+									log.Info("rewriting policy ", policyName, " enforcement level to ", newEL)
 									block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
 								}
 							case "soft-mandatory":
 								fmt.Println("Case soft mandatory")
 								if exp_policy_name == policyName {
-									newEL := y.EnforcementLevel
-									log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
+									newEL := exceptionDetailsList.EnforcementLevel
+									log.Info("rewriting policy ", policyName, " enforcement level to ", newEL)
 									block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
 								}
 							case "advisory":
 								fmt.Println("Case advisory")
 								if exp_policy_name == policyName {
-									newEL := y.EnforcementLevel
-									log.Printf("rewriting policy %q enforcement level to %q", policyName, newEL)
+									newEL := exceptionDetailsList.EnforcementLevel
+									log.Info("rewriting policy ", policyName, " enforcement level to ", newEL)
 									block.Body().SetAttributeValue("enforcement_level", cty.StringVal(newEL))
 								}
 							}
@@ -138,14 +135,14 @@ func main() {
 			}
 			diagWr.WriteDiagnostics(diags)
 			if diags.HasErrors() {
-				fmt.Println("Failed to Write Policies")
-				os.Exit(1)
+				log.Fatal("Failed to Write Policies")
 			}
 		}
 
-		// if err := ioutil.WriteFile(filePath, f.Bytes(), 0644); err != nil {
-		// 	fmt.Println("Error Writing to File")
-		// 	log.Fatal(err)
-		// }
+		if err := ioutil.WriteFile(filePath, f.Bytes(), 0644); err != nil {
+			log.Error("Error Writing to File")
+			log.Fatal(err)
+		}
+		log.Info("End of Exceptions Parsing")
 	}
 }
