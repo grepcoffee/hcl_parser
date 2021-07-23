@@ -22,23 +22,16 @@ def policy_matching(policy_name, environment):
 ############### MAIN ###############
 ####################################
 
-environment = ['prod', 'dev']
-for e in environment:
-    if e == 'dev':
-        policy = 'filelocation.hcl'
-    elif e == 'prod':
-        policy = 'filelocation.hcl'
-    else:
-        print('No files specified')
+policy = 'sentinel.hcl'
 
-    with open(policy, 'r+') as sentinelhcl_file:
-        exceptions = open_parse_exep(e)
-        sentinelhcl = hcl.load(sentinelhcl_file)
-        hcl_policies = sentinelhcl['policy']
-        matched_policies = policy_matching(hcl_policies, e)
-        for i in hcl_policies:
-            if i in matched_policies:
-                enforcement_level = exceptions[i]
-                hcl_policies[i]['enforcement_level'] = enforcement_level
-        hcl_parsed = hcl.dumps(hcl_policies)
-        sentinelhcl_file.write(hcl_parsed)
+with open(policy, 'r+') as sentinelhcl_file:
+    exceptions = open_parse_exep(e)
+    sentinelhcl = hcl.load(sentinelhcl_file)
+    hcl_policies = sentinelhcl['policy']
+    matched_policies = policy_matching(hcl_policies, e)
+    for i in hcl_policies:
+        if i in matched_policies:
+            enforcement_level = exceptions[i]
+            hcl_policies[i]['enforcement_level'] = enforcement_level
+    hcl_parsed = hcl.dumps(hcl_policies)
+    sentinelhcl_file.write(hcl_parsed)
